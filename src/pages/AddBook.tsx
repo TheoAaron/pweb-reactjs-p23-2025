@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
+import LogoImg from "@/assets/logo.jpg";
 import {
   Select,
   SelectContent,
@@ -122,7 +123,7 @@ const AddBook = () => {
         className="text-center"
       >
         <div className="inline-block glass-card rounded-full p-4 mb-4">
-          <BookOpen className="w-12 h-12 text-primary" />
+          <img src={LogoImg} alt="Logo" className="w-8 h-8 rounded-full object-cover" />
         </div>
         <h1 className="text-4xl font-bold gradient-text mb-2">Add New Book</h1>
         <p className="text-muted-foreground">

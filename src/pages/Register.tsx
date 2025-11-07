@@ -9,6 +9,7 @@ import { Progress } from '@/components/ui/progress';
 import { BookOpen, Mail, Lock, User, Loader2, Check } from 'lucide-react';
 import { toast } from 'sonner';
 import heroImage from '@/assets/library-hero.jpg';
+import LogoImg from "@/assets/logo.jpg";
 
 const Register = () => {
   const navigate = useNavigate();
@@ -102,7 +103,7 @@ const Register = () => {
               transition={{ duration: 0.5 }}
               className="inline-block mb-4"
             >
-              <BookOpen className="w-16 h-16 text-primary mx-auto" />
+              <img src={LogoImg} alt="Logo" className="w-16 h-16 rounded-full object-cover text-primary mx-auto" />
             </motion.div>
             <h1 className="text-3xl font-bold gradient-text mb-2">Create Account</h1>
             <p className="text-muted-foreground">Join our library community</p>

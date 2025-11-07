@@ -2,6 +2,8 @@ import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
+import LogoImg from "@/assets/logo.jpg";
+
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -55,14 +57,15 @@ export const Layout = ({ children }: LayoutProps) => {
           <div className="flex items-center justify-between">
             {/* Logo */}
             <Link to="/books" className="flex items-center space-x-2 group">
-              <motion.div
-                whileHover={{ rotate: 360 }}
-                transition={{ duration: 0.5 }}
+            <motion.div
+              whileHover={{ rotate: 360 }}
+              transition={{ duration: 0.5 }}
               >
-                <BookOpen className="w-8 h-8 text-primary" />
-              </motion.div>
-              <span className="text-2xl font-bold gradient-text">LibraryHub</span>
-            </Link>
+              <img src={LogoImg} alt="Logo" className="w-8 h-8 rounded-full object-cover" />
+            </motion.div>
+  <span className="text-2xl font-bold gradient-text">LibraryHub</span>
+</Link>
+
 
             {/* Desktop Navigation */}
             <div className="hidden md:flex items-center space-x-1">
@@ -125,7 +128,7 @@ export const Layout = ({ children }: LayoutProps) => {
                 <SheetContent className="glass-card">
                   <SheetHeader>
                     <SheetTitle className="flex items-center space-x-2">
-                      <BookOpen className="w-6 h-6 text-primary" />
+                      <img src={LogoImg} alt="Logo" className="w-6 h-6" />
                       <span className="gradient-text">LibraryHub</span>
                     </SheetTitle>
                   </SheetHeader>

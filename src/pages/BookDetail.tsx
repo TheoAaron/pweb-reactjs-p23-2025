@@ -6,6 +6,11 @@ import { Book } from '@/types';
 import { Button } from '@/components/ui/button';
 import { BookDetailSkeleton } from '@/components/LoadingSkeleton';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import imgGatsby from "../assets/the_great_gatsby.png";
+import imgMockingbird from "../assets/to_kill_a_mockingbird.jpg";
+import img1984 from "../assets/1984.png";
+import imgPride from "../assets/pride_and_prejudice.jpg";
+
 import {
   ArrowLeft,
   BookOpen,

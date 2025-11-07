@@ -5,6 +5,11 @@ import { useBooks } from '@/hooks/useBooks';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { BookCardSkeleton } from '@/components/LoadingSkeleton';
+import imgGatsby from "../assets/the_great_gatsby.png";
+import imgMockingbird from "../assets/to_kill_a_mockingbird.jpg";
+import img1984 from "../assets/1984.png";
+import imgPride from "../assets/pride_and_prejudice.jpg";
+import LogoImg from "@/assets/logo.jpg";
 import {
   Select,
   SelectContent,

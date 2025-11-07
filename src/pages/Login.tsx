@@ -9,6 +9,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { BookOpen, Mail, Lock, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 import heroImage from '@/assets/library-hero.jpg';
+import LogoImg from "@/assets/logo.jpg";
 
 const Login = () => {
   const navigate = useNavigate();
@@ -70,7 +71,7 @@ const Login = () => {
               transition={{ duration: 0.5 }}
               className="inline-block mb-4"
             >
-              <BookOpen className="w-16 h-16 text-primary mx-auto" />
+              <img src={LogoImg} alt="Logo" className="w-16 h-16 text-primary mx-auto rounded-full object-cover" />
             </motion.div>
             <h1 className="text-3xl font-bold gradient-text mb-2">Welcome Back</h1>
             <p className="text-muted-foreground">Sign in to access your library</p>

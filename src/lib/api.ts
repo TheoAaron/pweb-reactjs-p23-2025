@@ -1,6 +1,12 @@
 import axios, { AxiosError } from 'axios';
 import { Book, Transaction, User, CartItem } from '@/types';
 
+
+import imgGatsby from "../assets/the_great_gatsby.png";
+import imgMockingbird from "../assets/to_kill_a_mockingbird.jpg";
+import img1984 from "../assets/1984.png";
+import imgPride from "../assets/pride_and_prejudice.jpg";
+
 // Mock API base URL - replace with your actual API
 const API_BASE_URL = 'https://api.example.com';
 
@@ -89,6 +95,7 @@ export const booksAPI = {
         pages: 180,
         language: 'English',
         rating: 4.5,
+        coverImage: imgGatsby,
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
       },
@@ -106,6 +113,7 @@ export const booksAPI = {
         pages: 324,
         language: 'English',
         rating: 4.8,
+        coverImage: imgMockingbird,
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
       },
@@ -123,6 +131,7 @@ export const booksAPI = {
         pages: 328,
         language: 'English',
         rating: 4.6,
+        coverImage: img1984,
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
       },
@@ -136,10 +145,11 @@ export const booksAPI = {
         description: 'A romantic novel of manners',
         publisher: 'T. Egerton',
         publicationYear: 1813,
-        isbn: '978-0-14-143951-8',
+        isbn: '978-0-14-143951-8',  
         pages: 432,
         language: 'English',
         rating: 4.7,
+        coverImage: imgPride,
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
       },
