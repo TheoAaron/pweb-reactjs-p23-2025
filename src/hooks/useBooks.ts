@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Book } from '@/types';
-import { booksAPI } from '@/lib/api';
+import { booksAPI, getGenreIdByName } from '@/lib/api';
 import { toast } from 'sonner';
 
 export const useBooks = (params?: { search?: string; genre?: string; sort?: string }) => {
@@ -29,6 +29,15 @@ export const useBooks = (params?: { search?: string; genre?: string; sort?: stri
 
   const createBook = async (bookData: Partial<Book>) => {
     try {
+      // If genre is a string (name), convert to ID
+      if (bookData.genre && typeof bookData.genre === 'string') {
+        const genreId = await getGenreIdByName(bookData.genre);
+        if (!genreId) {
+          throw new Error(`Genre "${bookData.genre}" not found. Please select a valid genre.`);
+        }
+        bookData.genre = genreId;
+      }
+      
       const newBook = await booksAPI.create(bookData);
       setBooks(prev => [newBook, ...prev]);
       toast.success('Book added successfully! 📚', {
@@ -44,6 +53,15 @@ export const useBooks = (params?: { search?: string; genre?: string; sort?: stri
 
   const updateBook = async (id: string, bookData: Partial<Book>) => {
     try {
+      // If genre is a string (name), convert to ID
+      if (bookData.genre && typeof bookData.genre === 'string') {
+        const genreId = await getGenreIdByName(bookData.genre);
+        if (!genreId) {
+          throw new Error(`Genre "${bookData.genre}" not found. Please select a valid genre.`);
+        }
+        bookData.genre = genreId;
+      }
+      
       const updatedBook = await booksAPI.update(id, bookData);
       setBooks(prev => prev.map(book => book.id === id ? updatedBook : book));
       toast.success('Book updated! ✨', {

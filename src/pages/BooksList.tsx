@@ -1,7 +1,9 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { useBooks } from '@/hooks/useBooks';
+import { useCart } from '@/contexts/CartContext';
+import { genresAPI } from '@/lib/api';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { BookCardSkeleton } from '@/components/LoadingSkeleton';
@@ -20,9 +22,7 @@ import {
 import { Search, SlidersHorizontal, BookOpen, ShoppingCart } from 'lucide-react';
 import { Book } from '@/types';
 
-const genres = ['all', 'Fiction', 'Science Fiction', 'Romance', 'Mystery', 'Non-Fiction', 'Biography'];
-
-const BookCard = ({ book }: { book: Book }) => (
+const BookCard = ({ book, onAddToCart }: { book: Book; onAddToCart: (book: Book) => void }) => (
   <motion.div
     initial={{ opacity: 0, y: 20 }}
     animate={{ opacity: 1, y: 0 }}
@@ -77,9 +77,21 @@ const BookCard = ({ book }: { book: Book }) => (
           </p>
           <p className="text-sm text-muted-foreground">Stock: {book.stock}</p>
         </div>
-        <Link to={`/books/${book.id}`}>
-          <Button className="shadow-lg hover:shadow-xl transition-all">
-            View Details
+      </div>
+
+      <div className="flex gap-2">
+        <Button
+          variant="outline"
+          className="flex-1"
+          onClick={() => onAddToCart(book)}
+          disabled={book.stock === 0}
+        >
+          <ShoppingCart className="w-4 h-4 mr-2" />
+          Add to Cart
+        </Button>
+        <Link to={`/books/${book.id}`} className="flex-1">
+          <Button className="w-full shadow-lg hover:shadow-xl transition-all">
+            Details
           </Button>
         </Link>
       </div>
@@ -90,7 +102,23 @@ const BookCard = ({ book }: { book: Book }) => (
 const BooksList = () => {
   const [search, setSearch] = useState('');
   const [genre, setGenre] = useState('all');
-  const { books, isLoading } = useBooks({ search, genre });
+  const [genres, setGenres] = useState<{ id: string; name: string }[]>([]);
+  const { addToCart } = useCart();
+  // Don't pass genre filter to API if it's 'all' or a name (backend expects UUID)
+  const { books, isLoading } = useBooks({ search, genre: genre === 'all' ? undefined : undefined });
+
+  // Fetch genres from backend
+  useEffect(() => {
+    const fetchGenres = async () => {
+      try {
+        const genreList = await genresAPI.getAll();
+        setGenres(genreList);
+      } catch (error) {
+        console.error('Failed to load genres:', error);
+      }
+    };
+    fetchGenres();
+  }, []);
 
   return (
     <div className="space-y-8">
@@ -130,9 +158,10 @@ const BooksList = () => {
                 <SelectValue placeholder="Select genre" />
               </SelectTrigger>
               <SelectContent className="glass-card">
+                <SelectItem value="all">All Genres</SelectItem>
                 {genres.map((g) => (
-                  <SelectItem key={g} value={g}>
-                    {g === 'all' ? 'All Genres' : g}
+                  <SelectItem key={g.id} value={g.name}>
+                    {g.name}
                   </SelectItem>
                 ))}
               </SelectContent>
@@ -177,7 +206,7 @@ const BooksList = () => {
           className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6"
         >
           {books.map((book) => (
-            <BookCard key={book.id} book={book} />
+            <BookCard key={book.id} book={book} onAddToCart={addToCart} />
           ))}
         </motion.div>
       )}

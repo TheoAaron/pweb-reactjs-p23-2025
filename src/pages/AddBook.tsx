@@ -1,7 +1,8 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { useBooks } from '@/hooks/useBooks';
+import { genresAPI } from '@/lib/api';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -18,13 +19,13 @@ import { Progress } from '@/components/ui/progress';
 import { BookOpen, ArrowLeft, ArrowRight, Loader2, Sparkles } from 'lucide-react';
 import { toast } from 'sonner';
 
-const genres = ['Fiction', 'Science Fiction', 'Romance', 'Mystery', 'Non-Fiction', 'Biography'];
-
 const AddBook = () => {
   const navigate = useNavigate();
   const { createBook } = useBooks();
   const [currentStep, setCurrentStep] = useState(1);
   const [isLoading, setIsLoading] = useState(false);
+  const [genres, setGenres] = useState<{ id: string; name: string }[]>([]);
+  const [loadingGenres, setLoadingGenres] = useState(true);
   const [formData, setFormData] = useState({
     title: '',
     writer: '',
@@ -40,6 +41,24 @@ const AddBook = () => {
   });
 
   const totalSteps = 3;
+
+  // Fetch genres from backend
+  useEffect(() => {
+    const fetchGenres = async () => {
+      try {
+        setLoadingGenres(true);
+        const genreList = await genresAPI.getAll();
+        setGenres(genreList);
+      } catch (error) {
+        toast.error('Failed to load genres', {
+          description: 'Unable to fetch genre list from server.',
+        });
+      } finally {
+        setLoadingGenres(false);
+      }
+    };
+    fetchGenres();
+  }, []);
 
   const validateStep = (step: number): boolean => {
     switch (step) {
@@ -193,14 +212,18 @@ const AddBook = () => {
                 <Label htmlFor="genre">
                   Genre <span className="text-destructive">*</span>
                 </Label>
-                <Select value={formData.genre} onValueChange={(value) => setFormData({ ...formData, genre: value })}>
+                <Select 
+                  value={formData.genre} 
+                  onValueChange={(value) => setFormData({ ...formData, genre: value })}
+                  disabled={loadingGenres}
+                >
                   <SelectTrigger className="h-12 glass-card">
-                    <SelectValue placeholder="Select genre" />
+                    <SelectValue placeholder={loadingGenres ? "Loading genres..." : "Select genre"} />
                   </SelectTrigger>
                   <SelectContent className="glass-card">
                     {genres.map((genre) => (
-                      <SelectItem key={genre} value={genre}>
-                        {genre}
+                      <SelectItem key={genre.id} value={genre.name}>
+                        {genre.name}
                       </SelectItem>
                     ))}
                   </SelectContent>

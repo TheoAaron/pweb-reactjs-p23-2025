@@ -41,17 +41,20 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setIsLoading(true);
       const { user: userData, token } = await authAPI.login(email, password);
       
+      // Store user data and token
+      const userWithToken = { ...userData, token };
       localStorage.setItem('user', JSON.stringify(userData));
       localStorage.setItem('authToken', token);
       
-      setUser(userData);
+      setUser(userWithToken);
       toast.success('Welcome back! 🎉', {
         description: `Logged in as ${userData.email}`,
       });
-    } catch (error) {
+    } catch (error: any) {
       console.error('Login failed:', error);
+      const errorMessage = error?.response?.data?.message || error?.message || 'Please check your credentials and try again.';
       toast.error('Login failed', {
-        description: 'Please check your credentials and try again.',
+        description: errorMessage,
       });
       throw error;
     } finally {
@@ -64,17 +67,20 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setIsLoading(true);
       const { user: userData, token } = await authAPI.register(email, password, name);
       
+      // Store user data and token
+      const userWithToken = { ...userData, token };
       localStorage.setItem('user', JSON.stringify(userData));
       localStorage.setItem('authToken', token);
       
-      setUser(userData);
+      setUser(userWithToken);
       toast.success('Account created! 🎊', {
         description: 'Welcome to LibraryHub!',
       });
-    } catch (error) {
+    } catch (error: any) {
       console.error('Registration failed:', error);
+      const errorMessage = error?.response?.data?.message || error?.message || 'Please try again later.';
       toast.error('Registration failed', {
-        description: 'Please try again later.',
+        description: errorMessage,
       });
       throw error;
     } finally {

@@ -1,7 +1,9 @@
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { useAuth } from '@/contexts/AuthContext';
+import { useCart } from '@/contexts/CartContext';
 import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
 import LogoImg from "@/assets/logo.jpg";
 
 import {
@@ -34,9 +36,12 @@ const navItems = [
 
 export const Layout = ({ children }: LayoutProps) => {
   const { user, logout } = useAuth();
+  const { getTotalItems } = useCart();
   const location = useLocation();
   const navigate = useNavigate();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
+  const cartItemCount = getTotalItems();
 
   const handleLogout = () => {
     logout();
@@ -72,6 +77,7 @@ export const Layout = ({ children }: LayoutProps) => {
               {navItems.map((item) => {
                 const Icon = item.icon;
                 const isActive = isActivePath(item.path);
+                const showBadge = item.path === '/transactions' && cartItemCount > 0;
                 return (
                   <Link key={item.path} to={item.path}>
                     <Button
@@ -82,6 +88,14 @@ export const Layout = ({ children }: LayoutProps) => {
                     >
                       <Icon className="w-4 h-4 mr-2" />
                       {item.name}
+                      {showBadge && (
+                        <Badge 
+                          variant="destructive" 
+                          className="ml-2 px-2 py-0.5 text-xs font-bold"
+                        >
+                          {cartItemCount}
+                        </Badge>
+                      )}
                       {isActive && (
                         <motion.div
                           layoutId="activeTab"
@@ -106,7 +120,7 @@ export const Layout = ({ children }: LayoutProps) => {
                 <DropdownMenuContent align="end" className="w-56 glass-card">
                   <DropdownMenuLabel>
                     <div className="flex flex-col space-y-1">
-                      <p className="text-sm font-medium">{user?.name}</p>
+                      <p className="text-sm font-medium">{user?.username}</p>
                       <p className="text-xs text-muted-foreground">{user?.email}</p>
                     </div>
                   </DropdownMenuLabel>

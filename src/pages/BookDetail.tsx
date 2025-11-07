@@ -3,6 +3,7 @@ import { useParams, useNavigate, Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { booksAPI } from '@/lib/api';
 import { Book } from '@/types';
+import { useCart } from '@/contexts/CartContext';
 import { Button } from '@/components/ui/button';
 import { BookDetailSkeleton } from '@/components/LoadingSkeleton';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -27,6 +28,7 @@ import { toast } from 'sonner';
 const BookDetail = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const { addToCart } = useCart();
   const [book, setBook] = useState<Book | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [quantity, setQuantity] = useState(1);
@@ -51,9 +53,10 @@ const BookDetail = () => {
   };
 
   const handleAddToCart = () => {
-    toast.success('Added to cart! 🛒', {
-      description: `${quantity} × ${book?.title}`,
-    });
+    if (book) {
+      addToCart(book, quantity);
+      setQuantity(1); // Reset quantity after adding
+    }
   };
 
   if (isLoading) {

@@ -1,8 +1,8 @@
 export interface User {
   id: string;
   email: string;
-  name: string;
-  token: string;
+  username?: string | null;
+  token?: string;
 }
 
 export interface Book {

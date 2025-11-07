@@ -7,8 +7,8 @@ import imgMockingbird from "../assets/to_kill_a_mockingbird.jpg";
 import img1984 from "../assets/1984.png";
 import imgPride from "../assets/pride_and_prejudice.jpg";
 
-// Mock API base URL - replace with your actual API
-const API_BASE_URL = 'https://api.example.com';
+// Backend API base URL
+const API_BASE_URL = 'http://localhost:8080';
 
 // Create axios instance
 const api = axios.create({
@@ -34,6 +34,7 @@ api.interceptors.request.use(
 api.interceptors.response.use(
   (response) => response,
   (error: AxiosError) => {
+    console.error('API Error:', error.response?.status, error.response?.data);
     if (error.response?.status === 401) {
       localStorage.removeItem('authToken');
       localStorage.removeItem('user');
@@ -46,219 +47,165 @@ api.interceptors.response.use(
 // Auth API
 export const authAPI = {
   login: async (email: string, password: string): Promise<{ user: User; token: string }> => {
-    // Mock implementation - replace with actual API call
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    
-    const mockUser: User = {
-      id: '1',
-      email,
-      name: email.split('@')[0],
-      token: 'mock-token-' + Date.now(),
-    };
-    
-    return { user: mockUser, token: mockUser.token };
+    const response = await api.post('/auth/login', { email, password });
+    // Backend may return { user, token } or nested structure
+    return response.data;
   },
 
   register: async (email: string, password: string, name: string): Promise<{ user: User; token: string }> => {
-    // Mock implementation
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    
-    const mockUser: User = {
-      id: Date.now().toString(),
-      email,
-      name,
-      token: 'mock-token-' + Date.now(),
-    };
-    
-    return { user: mockUser, token: mockUser.token };
+    // Backend expects 'username' field, not 'name'
+    const response = await api.post('/auth/register', { email, password, username: name });
+    return response.data;
   },
+};
+
+// Helper function to transform backend book format to frontend Book format
+const transformBackendBook = (backendBook: any): Book => {
+  return {
+    id: backendBook.id,
+    title: backendBook.title,
+    writer: backendBook.writer,
+    publisher: backendBook.publisher,
+    // Backend returns camelCase: publicationYear
+    publicationYear: backendBook.publicationYear,
+    description: backendBook.description,
+    price: typeof backendBook.price === 'string' ? parseFloat(backendBook.price) : backendBook.price,
+    // Backend returns camelCase: stockQuantity
+    stock: backendBook.stockQuantity,
+    genre: typeof backendBook.genre === 'object' && backendBook.genre ? backendBook.genre.name : (backendBook.genreId || 'Unknown'),
+    coverImage: backendBook.coverImage || backendBook.cover_image,
+    rating: backendBook.rating,
+    createdAt: backendBook.createdAt || new Date().toISOString(),
+    updatedAt: backendBook.updatedAt || new Date().toISOString(),
+  };
 };
 
 // Books API
 export const booksAPI = {
   getAll: async (params?: { search?: string; genre?: string; sort?: string }): Promise<Book[]> => {
-    // Mock implementation with sample books
-    await new Promise(resolve => setTimeout(resolve, 500));
+    // Transform frontend params to backend expected params
+    const backendParams: any = {};
+    if (params?.search) backendParams.q = params.search;
+    if (params?.genre && params.genre !== 'all') backendParams.genre = params.genre;
+    if (params?.sort) backendParams.sort = params.sort;
     
-    const mockBooks: Book[] = [
-      {
-        id: '1',
-        title: 'The Great Gatsby',
-        writer: 'F. Scott Fitzgerald',
-        price: 120000,
-        stock: 15,
-        genre: 'Fiction',
-        description: 'A classic novel about the American Dream in the 1920s',
-        publisher: 'Scribner',
-        publicationYear: 1925,
-        isbn: '978-0-7432-7356-5',
-        pages: 180,
-        language: 'English',
-        rating: 4.5,
-        coverImage: imgGatsby,
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-      },
-      {
-        id: '2',
-        title: 'To Kill a Mockingbird',
-        writer: 'Harper Lee',
-        price: 95000,
-        stock: 20,
-        genre: 'Fiction',
-        description: 'A gripping tale of racial injustice and childhood innocence',
-        publisher: 'J.B. Lippincott & Co.',
-        publicationYear: 1960,
-        isbn: '978-0-06-112008-4',
-        pages: 324,
-        language: 'English',
-        rating: 4.8,
-        coverImage: imgMockingbird,
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-      },
-      {
-        id: '3',
-        title: '1984',
-        writer: 'George Orwell',
-        price: 110000,
-        stock: 12,
-        genre: 'Science Fiction',
-        description: 'A dystopian social science fiction novel',
-        publisher: 'Secker & Warburg',
-        publicationYear: 1949,
-        isbn: '978-0-452-28423-4',
-        pages: 328,
-        language: 'English',
-        rating: 4.6,
-        coverImage: img1984,
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-      },
-      {
-        id: '4',
-        title: 'Pride and Prejudice',
-        writer: 'Jane Austen',
-        price: 85000,
-        stock: 18,
-        genre: 'Romance',
-        description: 'A romantic novel of manners',
-        publisher: 'T. Egerton',
-        publicationYear: 1813,
-        isbn: '978-0-14-143951-8',  
-        pages: 432,
-        language: 'English',
-        rating: 4.7,
-        coverImage: imgPride,
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-      },
-    ];
-    
-    let filtered = [...mockBooks];
-    
-    if (params?.search) {
-      const search = params.search.toLowerCase();
-      filtered = filtered.filter(book => 
-        book.title.toLowerCase().includes(search) ||
-        book.writer.toLowerCase().includes(search)
-      );
-    }
-    
-    if (params?.genre && params.genre !== 'all') {
-      filtered = filtered.filter(book => book.genre === params.genre);
-    }
-    
-    return filtered;
+    console.log('Fetching books with params:', backendParams);
+    const response = await api.get('/books', { params: backendParams });
+    console.log('Books response:', response.data);
+    // Backend returns { data: books[], meta: { ... } }
+    const books = response.data.data || response.data;
+    // Transform each book from backend format to frontend format
+    return Array.isArray(books) ? books.map(transformBackendBook) : [];
   },
 
   getById: async (id: string): Promise<Book> => {
-    const books = await booksAPI.getAll();
-    const book = books.find(b => b.id === id);
-    if (!book) throw new Error('Book not found');
-    return book;
+    const response = await api.get(`/books/${id}`);
+    // Backend returns { book: {...} }
+    const book = response.data.book || response.data;
+    return transformBackendBook(book);
   },
 
   create: async (bookData: Partial<Book>): Promise<Book> => {
-    await new Promise(resolve => setTimeout(resolve, 800));
-    
-    const newBook: Book = {
-      id: Date.now().toString(),
-      title: bookData.title || '',
-      writer: bookData.writer || '',
-      price: bookData.price || 0,
-      stock: bookData.stock || 0,
-      genre: bookData.genre || '',
-      description: bookData.description,
+    // Transform frontend Book format to backend expected format
+    const backendFormat = {
+      title: bookData.title,
+      writer: bookData.writer,
       publisher: bookData.publisher,
-      publicationYear: bookData.publicationYear,
-      isbn: bookData.isbn,
-      pages: bookData.pages,
-      language: bookData.language || 'English',
-      rating: 0,
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
+      publication_year: bookData.publicationYear,
+      description: bookData.description,
+      price: bookData.price,
+      stock_quantity: bookData.stock,
+      genre_id: bookData.genre, // This should be genre UUID from backend
     };
-    
-    return newBook;
+    const response = await api.post('/books', backendFormat);
+    const book = response.data.book || response.data;
+    return transformBackendBook(book);
   },
 
   update: async (id: string, bookData: Partial<Book>): Promise<Book> => {
-    await new Promise(resolve => setTimeout(resolve, 800));
-    const book = await booksAPI.getById(id);
-    return { ...book, ...bookData, updatedAt: new Date().toISOString() };
+    // Transform frontend Book format to backend expected format
+    const backendFormat: any = {};
+    if (bookData.title !== undefined) backendFormat.title = bookData.title;
+    if (bookData.writer !== undefined) backendFormat.writer = bookData.writer;
+    if (bookData.publisher !== undefined) backendFormat.publisher = bookData.publisher;
+    if (bookData.publicationYear !== undefined) backendFormat.publication_year = bookData.publicationYear;
+    if (bookData.description !== undefined) backendFormat.description = bookData.description;
+    if (bookData.price !== undefined) backendFormat.price = bookData.price;
+    if (bookData.stock !== undefined) backendFormat.stock_quantity = bookData.stock;
+    if (bookData.genre !== undefined) backendFormat.genre_id = bookData.genre;
+    
+    const response = await api.patch(`/books/${id}`, backendFormat);
+    const book = response.data.book || response.data;
+    return transformBackendBook(book);
   },
 
   delete: async (id: string): Promise<void> => {
-    await new Promise(resolve => setTimeout(resolve, 500));
+    await api.delete(`/books/${id}`);
   },
 };
 
 // Transactions API
 export const transactionsAPI = {
   getAll: async (): Promise<Transaction[]> => {
-    await new Promise(resolve => setTimeout(resolve, 500));
-    return [];
+    const response = await api.get('/transactions');
+    // Backend may return { data: [...] } or direct array
+    return response.data.data || response.data;
   },
 
   getById: async (id: string): Promise<Transaction> => {
-    const transactions = await transactionsAPI.getAll();
-    const transaction = transactions.find(t => t.id === id);
-    if (!transaction) throw new Error('Transaction not found');
-    return transaction;
+    const response = await api.get(`/transactions/${id}`);
+    return response.data.transaction || response.data;
   },
 
   create: async (items: { bookId: string; quantity: number }[]): Promise<Transaction> => {
-    await new Promise(resolve => setTimeout(resolve, 800));
-    
-    const books = await booksAPI.getAll();
-    const cartItems: CartItem[] = items.map(item => {
-      const book = books.find(b => b.id === item.bookId);
-      if (!book) throw new Error(`Book ${item.bookId} not found`);
-      return {
-        bookId: item.bookId,
-        book,
-        quantity: item.quantity,
-      };
-    });
-    
-    const totalAmount = cartItems.reduce(
-      (sum, item) => sum + item.book.price * item.quantity,
-      0
-    );
-    
-    const transaction: Transaction = {
-      id: Date.now().toString(),
-      userId: '1',
-      items: cartItems,
-      totalAmount,
-      status: 'completed',
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-    };
-    
-    return transaction;
+    // Transform bookId to book_id for backend
+    const backendItems = items.map(item => ({
+      book_id: item.bookId,
+      quantity: item.quantity
+    }));
+    const response = await api.post('/transactions', { items: backendItems });
+    return response.data.transaction || response.data;
+  },
+};
+
+// Genres API
+export const genresAPI = {
+  getAll: async (): Promise<{ id: string; name: string }[]> => {
+    const response = await api.get('/genre');
+    // Backend returns { data: [...] }
+    return response.data.data || response.data;
+  },
+
+  getById: async (id: string): Promise<{ id: string; name: string }> => {
+    const response = await api.get(`/genre/${id}`);
+    return response.data.genre || response.data;
+  },
+
+  create: async (genreData: { name: string }): Promise<{ id: string; name: string }> => {
+    const response = await api.post('/genre', genreData);
+    return response.data.genre || response.data;
+  },
+
+  update: async (id: string, genreData: { name: string }): Promise<{ id: string; name: string }> => {
+    const response = await api.patch(`/genre/${id}`, genreData);
+    return response.data.genre || response.data;
+  },
+
+  delete: async (id: string): Promise<void> => {
+    await api.delete(`/genre/${id}`);
   },
 };
 
 export default api;
+
+// Helper function to get genre ID by name
+export async function getGenreIdByName(genreName: string): Promise<string | null> {
+  try {
+    const genres = await genresAPI.getAll();
+    const genre = genres.find(g => g.name.toLowerCase() === genreName.toLowerCase());
+    return genre?.id || null;
+  } catch (error) {
+    console.error('Failed to fetch genres:', error);
+    return null;
+  }
+}
